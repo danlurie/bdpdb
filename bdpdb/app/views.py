@@ -1,7 +1,12 @@
-from flask import render_template
+from flask import render_template, flash
 from flask.ext.appbuilder.models.sqla.interface import SQLAInterface
-from flask.ext.appbuilder import ModelView, AppBuilder, expose, BaseView, has_access
+from flask.ext.appbuilder import ModelView, AppBuilder, expose, BaseView, has_access, SimpleFormView
 from app import appbuilder, db
+from wtforms import Form, StringField
+from wtforms.validators import DataRequired
+from flask.ext.appbuilder.fieldwidgets import BS3TextFieldWidget
+from flask.ext.appbuilder.forms import DynamicForm
+#from flask.ext.babelpkg import lazy_gettext as _
 
 """
     Create your Views::
@@ -37,8 +42,6 @@ class MyView(BaseView):
         param1 = "Goodbye, {}.".format(param1)
         return param1
 
-    #from flask import render_template
-
     @expose('/method3/<string:param1>')
     @has_access
     def method3(self, param1):
@@ -50,6 +53,31 @@ class MyView(BaseView):
 appbuilder.add_view(MyView, 'Method1', category='My View')
 appbuilder.add_link("Method2", href='/myview/method2/Dan', category='My View')
 appbuilder.add_link("Method3", href='/myview/method3/Dan', category='My View')
+
+class MyForm(DynamicForm):
+    field1 = StringField(('Field1'),
+            description=("We're number one!"),
+            validators=[DataRequired()],
+            widget=BS3TextFieldWidget())
+    field2 = StringField(('Field2'),
+            description=("We're number two! (And we're optional)"),
+            widget=BS3TextFieldWidget())
+
+class MyFormView(SimpleFormView):
+    form = MyForm
+    form_title = "Form View MKI"
+    message = "It worked!"
+
+    def form_get(self, form):
+        # pre-process form
+        form.field1.data = 'I dunno man, I just woke up here.'
+
+    def form_post(self, form):
+        # post-process form
+        flash(self.message, 'info')
+
+appbuilder.add_view(MyFormView, "My Form View", icon='fa-group', label='My form View',
+        category='My Forms', category_icon='fa_cogs')
 
 """
     Application wide 404 error handler
