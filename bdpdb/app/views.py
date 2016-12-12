@@ -8,7 +8,7 @@ from flask.ext.appbuilder.fieldwidgets import BS3TextFieldWidget
 from flask.ext.appbuilder.forms import DynamicForm
 #from flask.ext.babelpkg import lazy_gettext as _
 
-from .models import ContactGroup, Contact
+from .models import ContactGroup, Contact, Scan, Sequence, Patient
 
 """
     Create your Views::
@@ -113,6 +113,27 @@ appbuilder.add_view(GroupModelView, "List Groups", icon='fa-folder-open-o', cate
         category_icon='fa-envelope')
 appbuilder.add_view(ContactModelView, "List Contacts", icon='fa-envelope', category='Contacts')
 
+
+"""
+BDPDB Views
+"""
+
+class PatientView(ModelView):
+    datamodel = SQLAInterface(Patient)
+    list_columns = ['patient_number', 'dob', 'sex']
+
+class ScanView(ModelView):
+    datamodel = SQLAInterface(Scan)
+    related_views = [PatientView]
+
+class SequenceView(ModelView):
+    datamodel = SQLAInterface(Sequence)
+    related_views = [PatientView, ScanView]
+
+db.create_all()
+appbuilder.add_view(PatientView, "Patients", category='Patients')
+appbuilder.add_view(ScanView, "Scans", category='Scans')
+appbuilder.add_view(SequenceView, "Scan Sequences", category='Scans')
 """
     Application wide 404 error handler
 """
