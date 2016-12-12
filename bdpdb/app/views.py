@@ -8,6 +8,8 @@ from flask.ext.appbuilder.fieldwidgets import BS3TextFieldWidget
 from flask.ext.appbuilder.forms import DynamicForm
 #from flask.ext.babelpkg import lazy_gettext as _
 
+from .models import ContactGroup, Contact
+
 """
     Create your Views::
 
@@ -78,6 +80,31 @@ class MyFormView(SimpleFormView):
 
 appbuilder.add_view(MyFormView, "My Form View", icon='fa-group', label='My form View',
         category='My Forms', category_icon='fa_cogs')
+
+"""
+Examples from http://flask-appbuilder.readthedocs.io/en/latest/quickhowto.html
+"""
+
+class ContactModelView(ModelView):
+    datamodel = SQLAInterface(Contact)
+
+    label_columns = {'contact_group':'Contacts Group'}
+    list_columns = ['name', 'mobile_phone', 'birthday', 'contact_group']
+    
+    show_fieldsets = [
+            ('Summary', {'fields':['name', 'address', 'contact_group']}),
+            ('Personal Info', {'fields':['birthday', 'mobile_phone'], 'expanded':False}),
+            ]
+
+class GroupModelView(ModelView):
+    datamodel = SQLAInterface(ContactGroup)
+    related_views = [ContactModelView]
+
+   
+db.create_all()
+appbuilder.add_view(GroupModelView, "List Groups", icon='fa-folder-open-o', category='Contacts',
+        category_icon='fa-envelope')
+appbuilder.add_view(ContactModelView, "List Contacts", icon='fa-envelope', category='Contacts')
 
 """
     Application wide 404 error handler
