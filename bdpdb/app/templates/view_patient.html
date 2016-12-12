@@ -1,0 +1,88 @@
+{% extends 'appbuilder/baselayout.html' %}
+
+<!-- Papaya imports. Files and build #'s copied from /Papaya/releases/current/standard/ -->
+{% block head_css %}
+    {{ super() }}
+    <link href="{{url_for('static', filename='css/papaya.css')}}" rel="stylesheet"/>
+{% endblock %}
+
+{% block head_js %}
+    {{ super() }}
+    <script src="{{url_for('static', filename='js/papaya.js')}}"></script>
+<!-- Papaya viewer setup. Three viewers, one each for T1, T2, and FLAIR -->
+    <script type="text/javascript">
+        papaya.Container.syncViewers = true;
+
+        var params1 = [];
+        params1['orthogonal'] = false;
+        params1['orthogonalTall'] = true;
+        params1['radiological'] = true;
+        params1['smoothDisplay'] = false;
+        params1['showControlBar'] = true;
+        params1['expandable'] = true; 
+        params1["images"] = ['t1mprage_RPI.nii.gz', '157_manual_mask_RPI.nii.gz'];
+        params1['t1mprage_RPI.nii.gz']  = {minPercent: 0.0,
+                                          maxPercent: 0.5,
+                                          lut: "Grayscale",
+                                          interpolation: false};
+        params1['157_manual_mask_RPI.nii.gz'] = {minPercent: 0.0,
+                                                 maxPercent: 1.0,
+                                                 lut: "Overlay (Positives)",
+                                                 interpolation: false,
+                                                 alpha: 0.3};
+        
+        var params2 = [];
+        params2['orthogonal'] = false;
+        params2['orthogonalTall'] = true;
+        params2['radiological'] = true;
+        params2['smoothDisplay'] = false;
+        params2['showControlBar'] = true;
+        params2['expandable'] = true;
+        params2["images"] = ['t2tirmtradarkfluid3mmdeformed_RPI.nii.gz', '157_manual_mask_RPI.nii.gz'];
+        params2['t2tirmtradarkfluid3mmdeformed_RPI.nii.gz'] = {minPercent: 0.0,
+                                                               maxPercent: 1.0,
+                                                               lut: "Grayscale",
+                                                               interpolation: false};
+        params2['157_manual_mask_RPI.nii.gz'] = {minPercent: 0.0,
+                                                 maxPercent: 1.0,
+                                                 lut: "Overlay (Positives)",
+                                                 interpolation: false,
+                                                 alpha: 0.3};
+
+        var params3 = [];
+        params3['orthogonal'] = false;
+        params3['orthogonalTall'] = true;
+        params3['radiological'] = true;
+        params3['smoothDisplay'] = false;
+        params3['showControlBar'] = true;
+        params3['expandable'] = true;
+        params3["images"] = ['t2tsetra4483mmdeformed_RPI.nii.gz', '157_manual_mask_RPI.nii.gz'];
+        params3['t2tsetra4483mmdeformed_RPI.nii.gz'] = {minPercent: 0.0,
+                                                        maxPercent: 1.0,
+                                                        lut: "Grayscale",
+                                                        nterpolation: false};
+        params3['157_manual_mask_RPI.nii.gz'] = {minPercent: 0.0,
+                                                 maxPercent: 1.0,
+                                                 lut: "Overlay (Positives)",
+                                                 interpolation: false,
+                                                 alpha: 0.3};
+    </script>
+{% endblock %}
+
+{% block content %}
+    <h1>Patient {{patient_id}}</h1>
+
+    <div style="width:500px; height:600px; float: left">
+    <div class="papaya" data-params="params1"></div>
+    </div>    
+    <!--                          
+    <div style="width:500px; height:600px; float: left">
+    <div class="papaya" data-params="params2"></div>
+    </div> 
+                                                                    
+    <div style="width:500px; height:600px; float: left">
+    <div class="papaya" data-params="params3"></div>
+    </div>
+    -->
+{% endblock %}
+

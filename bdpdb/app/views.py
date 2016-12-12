@@ -52,9 +52,16 @@ class MyView(BaseView):
         self.update_redirect()
         return self.render_template('method3.html', param1=param1)
 
+    @expose('/view_patient/<string:patient_id>')
+    @has_access
+    def view_patient(self, patient_id):
+        self.update_redirect()
+        return self.render_template('view_patient.html', patient_id=patient_id)
+
 appbuilder.add_view(MyView, 'Method1', category='My View')
 appbuilder.add_link("Method2", href='/myview/method2/Dan', category='My View')
 appbuilder.add_link("Method3", href='/myview/method3/Dan', category='My View')
+appbuilder.add_link("view_patient", href='/myview/view_patient/157', category='My View')
 
 class MyForm(DynamicForm):
     field1 = StringField(('Field1'),
