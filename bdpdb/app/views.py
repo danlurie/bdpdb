@@ -35,8 +35,9 @@ class CoordSearchView(SimpleFormView):
         
     def form_post(self, form):
         # post-process form
-        patients = coordinate_search(
-        flash( str(foo))
+        #patients = coordinate_searc(
+        #flash( str(foo))
+        pass
 
 appbuilder.add_view(CoordSearchView, "MNI Coordinate Search", icon='fa-search', label='Search',
         category='Search', category_icon='fa_cogs')
