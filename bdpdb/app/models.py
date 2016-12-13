@@ -1,46 +1,14 @@
 from flask.ext.appbuilder import Model
-from flask.ext.appbuilder.models.mixins import AuditMixin, FileColumn, ImageColumn
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float
-from sqlalchemy.orm import relationship
-"""
-
-You can use the extra Flask-AppBuilder fields and Mixin's
-
-AuditMixin will add automatic timestamp of created and modified by who
-
-
-"""
-       
-"""
-Examples from http://flask-appbuilder.readthedocs.io/en/latest/quickhowto.html
-"""
-
-class ContactGroup(Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String(50), unique=True, nullable=False)
-
-    def __repr__(self):
-        return self.name
-
-class Contact(Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String(150), unique=True, nullable=False)
-    address = Column(String(564), default='Street ')
-    birthday = Column(Date)
-    mobile_phone = Column(String(20))
-    contact_group_id = Column(Integer, ForeignKey('contact_group.id'))
-    contact_group = relationship("ContactGroup")
-
-    def __repr__(self):
-        return self.name
-
-
+from flask.ext.appbuilder.models.mixins import AuditMixin
+from sqlalchemy import Column, Integer, String,  Date
+from wtforms import Form, IntegerField, validators
+# from sqlalchemy.orm import relationship
 """
 BDPDB Models
 Based on examples from http://flask-appbuilder.readthedocs.io/en/latest/relations.html
 """
 
-class Patient(Model):
+class Patient(AuditMixin, Model):
     id = Column(Integer, primary_key=True)
     patient_number = Column(Integer, unique=True, nullable=False)
     dob = Column(Date, nullable=False)
@@ -48,11 +16,24 @@ class Patient(Model):
     lesion_location = Column(String(50))
     lesion_cause = Column(String(50))
     lesion_date = Column(Date)
-    referred_by = Column(String(50))
+    referral_site = Column(String(50))
+    mask_path = Column(String(250))
 
     def __repr__(self):
         return self.patient_number
 
+class CoordSearchForm(Form):
+    x = IntegerField(
+            label='x',
+            validators=[validators.InputRequired()])
+    y = IntegerField(
+            label='y',
+            validators=[validators.InputRequired()])
+    z = IntegerField(
+            label='z',
+            validators=[validators.InputRequired()])
+
+"""
 class Sequence(Model):
     id = Column(Integer, primary_key=True)
     sequence_name = Column(String(50), nullable=False)
@@ -63,7 +44,7 @@ class Sequence(Model):
     num_slices =  Column(Integer, nullable=False)
     slice_thickness = Column(Float, nullable=False)
     slice_spacing = Column(Float, nullable=False)
-    acquisition_order = Column(String(25), nullable=False)
+    acquisition_order = Column(String(25))
     volumes = Column(Integer, nullable=False)
     scanner = Column(String(25), nullable=False)
 
@@ -83,7 +64,7 @@ class Scan(Model):
 
     def __repr__(self):
         return self.scan_type
-
+"""
 
 
 

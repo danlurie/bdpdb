@@ -1,139 +1,81 @@
 from flask import render_template, flash
 from flask.ext.appbuilder.models.sqla.interface import SQLAInterface
-from flask.ext.appbuilder import ModelView, AppBuilder, expose, BaseView, has_access, SimpleFormView
+from flask.ext.appbuilder import ModelView, expose, BaseView, has_access, SimpleFormView
 from app import appbuilder, db
-from wtforms import Form, StringField
+from wtforms import StringField
 from wtforms.validators import DataRequired
 from flask.ext.appbuilder.fieldwidgets import BS3TextFieldWidget
 from flask.ext.appbuilder.forms import DynamicForm
-#from flask.ext.babelpkg import lazy_gettext as _
 
-from .models import ContactGroup, Contact, Scan, Sequence, Patient
-
-"""
-    Create your Views::
-
-
-    class MyModelView(ModelView):
-        datamodel = SQLAInterface(MyModel)
-
-
-    Next, register your Views::
-
-
-    appbuilder.add_view(MyModelView, "My View", icon="fa-folder-open-o", category="My Category", category_icon='fa-envelope')
-"""
+from .compute import coordinate_search
+from .models import Patient
 
 """
-Example views from http://flask-appbuilder.readthedocs.io/en/latest/views.html
+Coordinate Search Form
 """
-class MyView(BaseView):
+
+class CoordSearch(DynamicForm):
+    field_x = StringField(('X'),
+              validators=[DataRequired()],
+              widget=BS3TextFieldWidget())
+    field_y = StringField(('Y'),
+              validators=[DataRequired()],
+              widget=BS3TextFieldWidget())
+    field_z = StringField(('Z'),
+              validators=[DataRequired()],
+              widget=BS3TextFieldWidget())
+
+class CoordSearchView(SimpleFormView):
+    form = CoordSearch
+    form_title = "MNI Coordinate Search"
     
-    default_view = 'method1'
-
-    @expose('/method1/')
-    @has_access
-    def method1(self):
-        # return param1
-        return "Hello, authorized user."
-    
-    @expose('/method2/<string:param1>')
-    @has_access
-    def method2(self, param1):
-        # render param1
-        param1 = "Goodbye, {}.".format(param1)
-        return param1
-
-    @expose('/method3/<string:param1>')
-    @has_access
-    def method3(self, param1):
-        # render param1 in the template
-        param1 = "Then {} said: 'Hey there, good looking.'".format(param1)
-        self.update_redirect()
-        return self.render_template('method3.html', param1=param1)
-
-    @expose('/view_patient/<string:patient_id>')
-    @has_access
-    def view_patient(self, patient_id):
-        self.update_redirect()
-        return self.render_template('view_patient.html', patient_id=patient_id)
-
-appbuilder.add_view(MyView, 'Method1', category='My View')
-appbuilder.add_link("Method2", href='/myview/method2/Dan', category='My View')
-appbuilder.add_link("Method3", href='/myview/method3/Dan', category='My View')
-appbuilder.add_link("view_patient", href='/myview/view_patient/157', category='My View')
-
-class MyForm(DynamicForm):
-    field1 = StringField(('Field1'),
-            description=("We're number one!"),
-            validators=[DataRequired()],
-            widget=BS3TextFieldWidget())
-    field2 = StringField(('Field2'),
-            description=("We're number two! (And we're optional)"),
-            widget=BS3TextFieldWidget())
-
-class MyFormView(SimpleFormView):
-    form = MyForm
-    form_title = "Form View MKI"
-    message = "It worked!"
-
     def form_get(self, form):
         # pre-process form
-        form.field1.data = 'I dunno man, I just woke up here.'
-
+        pass
+        
     def form_post(self, form):
         # post-process form
-        flash(self.message, 'info')
+        patients = coordinate_search(
+        flash( str(foo))
 
-appbuilder.add_view(MyFormView, "My Form View", icon='fa-group', label='My form View',
-        category='My Forms', category_icon='fa_cogs')
-
-"""
-Examples from http://flask-appbuilder.readthedocs.io/en/latest/quickhowto.html
-"""
-
-class ContactModelView(ModelView):
-    datamodel = SQLAInterface(Contact)
-
-    label_columns = {'contact_group':'Contacts Group'}
-    list_columns = ['name', 'mobile_phone', 'birthday', 'contact_group']
-    
-    show_fieldsets = [
-            ('Summary', {'fields':['name', 'address', 'contact_group']}),
-            ('Personal Info', {'fields':['birthday', 'mobile_phone'], 'expanded':False}),
-            ]
-
-class GroupModelView(ModelView):
-    datamodel = SQLAInterface(ContactGroup)
-    related_views = [ContactModelView]
-
-   
-db.create_all()
-appbuilder.add_view(GroupModelView, "List Groups", icon='fa-folder-open-o', category='Contacts',
-        category_icon='fa-envelope')
-appbuilder.add_view(ContactModelView, "List Contacts", icon='fa-envelope', category='Contacts')
-
+appbuilder.add_view(CoordSearchView, "MNI Coordinate Search", icon='fa-search', label='Search',
+        category='Search', category_icon='fa_cogs')
 
 """
 BDPDB Views
 """
+class Home(BaseView):
+    
+    default_view = 'view_overlap'
+
+    @expose('/view_overlap/')
+    @has_access
+    def view_overlap(self):
+        self.update_redirect()
+        return self.render_template('view_overlap.html')
+     
+appbuilder.add_view(Home, 'View Overlap', category='Home')
+
 
 class PatientView(ModelView):
     datamodel = SQLAInterface(Patient)
-    list_columns = ['patient_number', 'dob', 'sex']
 
-class ScanView(ModelView):
-    datamodel = SQLAInterface(Scan)
-    related_views = [PatientView]
+    list_columns = ['patient_number', 'dob', 'sex', 'lesion_location', 'lesion_cause']
 
-class SequenceView(ModelView):
-    datamodel = SQLAInterface(Sequence)
-    related_views = [PatientView, ScanView]
+    add_columns = ['patient_number', 'dob', 'sex', 'lesion_location', 'lesion_cause',
+            'lesion_date', 'referral_site', 'mask_path']
+    edit_columns = ['patient_number', 'dob', 'sex', 'lesion_location', 'lesion_cause',
+            'lesion_date', 'referral_site', 'mask_path']
+
+
+    show_fieldsets = [
+            ('Patient Info', {'fields':['patient_number', 'dob', 'sex', 'lesion_location',
+                'lesion_cause', 'lesion_date', 'referral_site', 'mask_path']})
+            ]
 
 db.create_all()
-appbuilder.add_view(PatientView, "Patients", category='Patients')
-appbuilder.add_view(ScanView, "Scans", category='Scans')
-appbuilder.add_view(SequenceView, "Scan Sequences", category='Scans')
+appbuilder.add_view(PatientView, "List Patients", icon='fa-users',category='Patients')
+
 """
     Application wide 404 error handler
 """

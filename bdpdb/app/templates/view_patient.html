@@ -20,7 +20,9 @@
         params1['smoothDisplay'] = false;
         params1['showControlBar'] = true;
         params1['expandable'] = true; 
-        params1["images"] = ['t1mprage_RPI.nii.gz', '157_manual_mask_RPI.nii.gz'];
+        params1["images"] = [
+        '{{url_for('static', filename='img_data/MNI152_T1_2mm_brain.nii.gz')}}',
+        '{{url_for('static', filename='img_data/lesion_mask_mni_sum.nii.gz')}}'];
         params1['t1mprage_RPI.nii.gz']  = {minPercent: 0.0,
                                           maxPercent: 0.5,
                                           lut: "Grayscale",
