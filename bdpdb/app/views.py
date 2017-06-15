@@ -7,8 +7,8 @@ from wtforms.validators import DataRequired
 from flask.ext.appbuilder.fieldwidgets import BS3TextFieldWidget
 from flask.ext.appbuilder.forms import DynamicForm
 
-from .compute import coordinate_search
-from .models import Patient
+#from .compute import coordinate_search
+from .models import Patient, Test, Cause
 
 """
 Coordinate Search Form
@@ -36,7 +36,7 @@ class CoordSearchView(SimpleFormView):
     def form_post(self, form):
         # post-process form
         #patients = coordinate_searc(
-        #flash( str(foo))
+        flash("hello")
         pass
 
 appbuilder.add_view(CoordSearchView, "MNI Coordinate Search", icon='fa-search', label='Search',
@@ -76,6 +76,31 @@ class PatientView(ModelView):
 
 db.create_all()
 appbuilder.add_view(PatientView, "List Patients", icon='fa-users',category='Patients')
+
+class CauseView(ModelView):
+    datamodel = SQLAInterface(Cause)
+    related_views = [PatientView]
+    add_columns = ['name']
+    edit_columns = ['name']
+    show_columns = ['name']
+    list_columns = ['name']
+
+class PatientCauseView
+
+db.create_all()
+appbuilder.add_view(CauseView, 'Cause', icon='fa-wrench', category='Patients')
+
+"""
+Alembic Test Views
+"""
+class TestView(ModelView):
+    datamodel = SQLAInterface(Test)
+
+    list_columns = ['run', 'description', 'feeling']
+    add_columns = ['run', 'description', 'feeling']
+
+db.create_all()
+appbuilder.add_view(TestView, "Alembic Test", icon='fa-wrench', category='Alembic')
 
 """
     Application wide 404 error handler
