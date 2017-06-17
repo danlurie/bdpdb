@@ -56,28 +56,54 @@ class BrainArea(AuditMixin, Model):
 
 assoc_area_patient = Table('area_patient', Model.metadata,
         Column('id', Integer, primary_key=True),
-        Column('area_id', Integer, ForeignKey('brainarea.id')),
+        Column('area_id', Integer, ForeignKey('brain_area.id')),
         Column('patient_id', Integer, ForeignKey('patient.id'))
         )
 
+# What scans does the patient have?
+
+# Scan Modality (based on BIDS spec)
+class ScanModality(AuditMixin, Model):
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), unique=True, nullable=False)
+
+    def __repr__(self):
+        return self.name
+
+# Scan object
+class Scan(AuditMixin, Model):
+    id = Column(Integer, primary_key=True)
+    patient_id = Column(Integer, ForeignKey('patient.id'), nullable=False)
+    patient_number = relationship("Patient")
+    modality_id = Column(Integer, ForeignKey('scan_modality.id'), nullable=False)
+    modality = relationship("ScanModality")
+    scan_date = Column(Date, nullable=False)
+    filename = Column(String(100), unique=True, nullable=False)
+
+    def __repr__(self):
+        return self.filename
+
+# The Patient entity
 class Patient(AuditMixin, Model):
     id = Column(Integer, primary_key=True)
     patient_number = Column(Integer, unique=True, nullable=False)
     dob = Column(Date, nullable=False)
-    sex_id = Column(Integer, ForeignKey, 'sex.id', nullable=False)
+    sex_id = Column(Integer, ForeignKey('sex.id'), nullable=False)
     sex = relationship("Sex")
     lesion_location = relationship("BrainArea", secondary=assoc_area_patient, backref='patient')
     lesion_hemisphere = relationship("Hemisphere", secondary=assoc_hemi_patient, backref='patient')
-    cause_id = Column(Integer, ForeignKey, 'cause.id')
+    cause_id = Column(Integer, ForeignKey('cause.id'))
     lesion_cause = relationship("Cause")
     lesion_date = Column(Date)
-    data_source_id = Column(Integer, ForeignKey, 'datasource.id')
+    data_source_id = Column(Integer, ForeignKey('data_source.id'))
     data_source = relationship("DataSource")
     patient_notes = Column(String(500))
+    #patient_scans = relationship("Scan")
 
     def __repr__(self):
         return self.patient_number
 
+# Coordinate search form
 class CoordSearchForm(Form):
     x = IntegerField(
             label='x',
