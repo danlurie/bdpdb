@@ -2,29 +2,11 @@ from flask_appbuilder import Model
 from flask_appbuilder.models.mixins import AuditMixin
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Table
 from sqlalchemy.orm import relationship
-from wtforms import Form, IntegerField, validators
+#from wtforms import Form, IntegerField, validators
+
 """
-BDPDB Models
-Based on examples from http://flask-appbuilder.readthedocs.io/en/latest/relations.html
+Patient information tables
 """
-
-# What caused the damage
-class Cause(AuditMixin, Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String(50), unique=True, nullable=False)
-
-    def __repr__(self):
-        return self.name
-
-# Where is the patient from
-class DataSource(AuditMixin, Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String(50), unique=True, nullable=False)
-
-    def __repr__(self):
-        return self.name
-
-# Patient Sex
 class Sex(Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(10), unique=True, nullable=False)
@@ -32,33 +14,83 @@ class Sex(Model):
     def __repr__(self):
         return self.name
 
-# Which hemispheres have damage
-class Hemisphere(Model):
-    id = Column(Integer, primary_key=True)
-    name = Column(String(10), unique=True, nullable=False)
 
-    def __repr__(self):
-        return self.name
-
-assoc_hemi_patient = Table('hemi_patient', Model.metadata,
-        Column('id', Integer, primary_key=True),
-        Column('hemi_id', Integer, ForeignKey('hemisphere.id')),
-        Column('patient_id', Integer, ForeignKey('patient.id'))
-        )
-
-# Which brain areas are damaged
-class BrainArea(AuditMixin, Model):
+class BrainArea(Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(75), unique=True, nullable=False)
 
     def __repr__(self):
         return self.name
 
-assoc_area_patient = Table('area_patient', Model.metadata,
-        Column('id', Integer, primary_key=True),
-        Column('area_id', Integer, ForeignKey('brain_area.id')),
-        Column('patient_id', Integer, ForeignKey('patient.id'))
+
+assoc_patient_area = Table('assoc_patient_area', Model.metadata,
+        Column('patient_id', Integer, ForeignKey('patient.id')),
+        Column('area_id', Integer, ForeignKey('brain_area.id'))
         )
+
+
+class Laterality(Model):
+    id = Column(Integer, primary_key=True)
+    name = Column(String(10), unique=True, nullable=False)
+
+    def __repr__(self):
+        return self.name
+
+
+class Etiology(Model):
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), unique=True, nullable=False)
+
+    def __repr__(self):
+        return self.name
+
+
+class DataSource(Model):
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), unique=True, nullable=False)
+
+    def __repr__(self):
+        return self.name
+
+
+class PatientNote(AuditMixin, Model):
+    id = Column(Integer, primary_key=True)
+    patient_id = Column(Integer, ForeignKey('patient.id'), nullable=False)
+    note_text = Column(String(1000), nullable=False)
+
+
+class Patient(AuditMixin, Model):
+    id = Column(Integer, primary_key=True)
+
+    patient_label = Column(String(25), unique=True, nullable=False)
+
+    dob = Column(Date, nullable=False) 
+
+    sex_id = Column(Integer, ForeignKey('sex.id'), nullable=False)
+    sex = relationship('Sex')
+
+    damaged_areas = relationship('BrainArea',
+            secondary=assoc_patient_area,
+            backref='patients')
+    
+    laterality_id = Column(Integer, ForeignKey('laterality.id'))
+    laterality = relationship('Laterality')
+
+    insult_date = Column(Date)
+    
+    etiology_id = Column(Integer, ForeignKey('etiology.id'))
+    etiology = relationship('Etiology')
+
+    data_source_id = Column(Integer, ForeignKey('data_source.id'))
+    data_source = relationship("DataSource")
+    
+    #patient_notes = Column(String(500))
+    #patient_scans = relationship("Scan")
+
+    def __repr__(self):
+        return self.patient_number
+
+"""
 
 # What scans does the patient have?
 
@@ -84,24 +116,7 @@ class Scan(AuditMixin, Model):
         return self.filename
 
 # The Patient entity
-class Patient(AuditMixin, Model):
-    id = Column(Integer, primary_key=True)
-    patient_number = Column(Integer, unique=True, nullable=False)
-    dob = Column(Date, nullable=False)
-    sex_id = Column(Integer, ForeignKey('sex.id'), nullable=False)
-    sex = relationship("Sex")
-    lesion_location = relationship("BrainArea", secondary=assoc_area_patient, backref='patient')
-    lesion_hemisphere = relationship("Hemisphere", secondary=assoc_hemi_patient, backref='patient')
-    cause_id = Column(Integer, ForeignKey('cause.id'))
-    lesion_cause = relationship("Cause")
-    lesion_date = Column(Date)
-    data_source_id = Column(Integer, ForeignKey('data_source.id'))
-    data_source = relationship("DataSource")
-    patient_notes = Column(String(500))
-    #patient_scans = relationship("Scan")
 
-    def __repr__(self):
-        return self.patient_number
 
 # Coordinate search form
 class CoordSearchForm(Form):
@@ -116,7 +131,7 @@ class CoordSearchForm(Form):
             validators=[validators.InputRequired()])
 
 
-"""
+
 class Sequence(Model):
     id = Column(Integer, primary_key=True)
     sequence_name = Column(String(50), nullable=False)
@@ -147,7 +162,7 @@ class Scan(Model):
 
     def __repr__(self):
         return self.scan_type
-"""
 
+"""
 
 
