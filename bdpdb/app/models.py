@@ -56,8 +56,10 @@ class DataSource(Model):
 class PatientNote(AuditMixin, Model):
     id = Column(Integer, primary_key=True)
     patient_id = Column(Integer, ForeignKey('patient.id'), nullable=False)
+    #patient_label = relationship('Patient')
     note_title = Column(String(25), nullable=False)
     note_text = Column(String(1000), nullable=False)
+
 
 class Patient(AuditMixin, Model):
     id = Column(Integer, primary_key=True)
@@ -85,36 +87,38 @@ class Patient(AuditMixin, Model):
     data_source = relationship("DataSource")
     
     patient_notes = relationship('PatientNote', backref='patient')
-    #patient_scans = relationship("Scan")
+    patient_scans = relationship("Scan", backref='patient')
 
     def __repr__(self):
         return self.patient_label
 
 """
-
-# What scans does the patient have?
-
-# Scan Modality (based on BIDS spec)
-class ScanModality(AuditMixin, Model):
+Scan information tables
+"""
+class ScanModality(Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True, nullable=False)
 
     def __repr__(self):
         return self.name
 
-# Scan object
+
 class Scan(AuditMixin, Model):
     id = Column(Integer, primary_key=True)
+
     patient_id = Column(Integer, ForeignKey('patient.id'), nullable=False)
-    patient_number = relationship("Patient")
+    #patient_label = relationship('Patient')
+
     modality_id = Column(Integer, ForeignKey('scan_modality.id'), nullable=False)
     modality = relationship("ScanModality")
+
     scan_date = Column(Date, nullable=False)
+
     filename = Column(String(100), unique=True, nullable=False)
 
     def __repr__(self):
         return self.filename
-
+"""
 # The Patient entity
 
 

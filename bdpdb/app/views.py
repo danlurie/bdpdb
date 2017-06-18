@@ -1,18 +1,17 @@
 from flask import render_template
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 #from flask_appbuilder import ModelView, expose, BaseView, has_access, SimpleFormView
-from flask_appbuilder import ModelView
+from flask_appbuilder import ModelView, BaseView, has_access, expose
 from app import appbuilder, db
-from flask_appbuilder.widgets import (ListItem, ListThumbnail, ListBlock, 
-        ListLinkWidget, ShowBlockWidget)
+from flask_appbuilder.widgets import ListLinkWidget
 #from wtforms import StringField
 #from wtforms.validators import DataRequired
 #from flask_appbuilder.fieldwidgets import BS3TextFieldWidget
 #from flask_appbuilder.forms import DynamicForm
-from .models import (Patient, PatientNote, Etiology, DataSource, BrainArea, Laterality,
-        Sex)
+from .models import (Patient, PatientNote, Etiology, DataSource, BrainArea,
+        Laterality, Scan, ScanModality, Sex)
 
-"""
+
 # Group overlap view
 class Home(BaseView):
     
@@ -26,34 +25,33 @@ class Home(BaseView):
      
 appbuilder.add_view(Home, 'View Overlap', category='Home')
 
-# PatientScanView
-class PatientScanView(ModelView):
-    datamodel = SQLAInterface(Scan) 
+class ScanView(ModelView):
+    datamodel = SQLAInterface(Scan)
+    list_widget = ListLinkWidget
 
-    add_columns = ['patient_number','modality', 'scan_date', 'filename']
-    edit_columns = ['modality', 'scan_date', 'filename']
-    show_columns = ['modality', 'scan_date', 'filename']
-    list_columns = ['modality', 'scan_date', 'filename']
+    add_columns = ['patient','filename','modality','scan_date']
+    edit_columns = ['patient','filename','modality','scan_date']
+    show_columns = ['filename','modality','scan_date']
+    list_columns = ['filename','modality','scan_date']
 
-appbuilder.add_view_no_menu(PatientScanView, "PatientScanView")
-"""
+appbuilder.add_view_no_menu(ScanView, "ScanView")
+
 
 class PatientNoteView(ModelView):
     datamodel = SQLAInterface(PatientNote)
     list_widget = ListLinkWidget
-    show_widget = ShowBlockWidget
 
-    add_columns = ['note_title', 'note_text']
-    edit_columns = ['note_title', 'note_text']
+    add_columns = ['patient', 'note_title', 'note_text']
+    edit_columns = ['patient', 'note_title', 'note_text']
     list_columns = ['note_title', 'created_by', 'created_on']
-    show_columns = ['created_by', 'created_on', 'note_title', 'note_text']
+    show_columns = ['created_by', 'created_on','note_title', 'note_text']
 
 appbuilder.add_view_no_menu(PatientNoteView, 'PatientNoteView')
 
 class PatientView(ModelView):
     datamodel = SQLAInterface(Patient)
+    list_widget = ListLinkWidget
     
-
     add_columns = ['patient_label','dob','sex','damaged_areas','laterality',
             'insult_date','etiology','data_source']
     edit_columns = ['dob','sex','damaged_areas','laterality',
@@ -61,10 +59,10 @@ class PatientView(ModelView):
     list_columns = ['patient_label','dob','sex','damaged_areas','laterality']
   
     
-    related_views = [PatientNoteView] 
+    related_views = [ScanView, PatientNoteView] 
     show_template = 'appbuilder/general/model/show_cascade.html' 
-   # related_views = [PatientScanView]
-   # show_template = 'appbuilder/general/model/show_cascade.html'
+    #related_views = [ScanView]
+    #show_template = 'appbuilder/general/model/show_cascade.html'
 
 
 class EtiologyView(ModelView):
@@ -93,6 +91,14 @@ class DataSourceView(ModelView):
     show_columns = ['name']
     list_columns = ['name']
 
+class ScanModalityView(ModelView):
+    datamodel = SQLAInterface(ScanModality)
+    related_views = [ScanView]
+    add_columns = ['name']
+    edit_columns = ['name']
+    show_columns = ['name']
+    list_columns = ['name']
+
 
 """
 Register views
@@ -109,6 +115,10 @@ appbuilder.add_view(BrainAreaView, 'Manage Brain Areas',
 
 appbuilder.add_view(DataSourceView, 'Manage Data Sources',
         icon='fa-institution', category='Manage')
+
+appbuilder.add_view(ScanModalityView, 'Manage Scan Types',
+        icon='fa-file-image-o', category='Manage')
+
 
 
 

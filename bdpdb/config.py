@@ -33,10 +33,10 @@ APP_NAME = "BDPDB"
 AUTH_TYPE = AUTH_DB
 
 # Uncomment to setup Full admin role name
-#AUTH_ROLE_ADMIN = 'Admin'
+AUTH_ROLE_ADMIN = 'Admin'
 
 # Uncomment to setup Public role name, no authentication needed
-#AUTH_ROLE_PUBLIC = 'Public'
+AUTH_ROLE_PUBLIC = 'Public'
 
 # Will allow user self registration
 #AUTH_USER_REGISTRATION = True
@@ -91,7 +91,8 @@ IMG_UPLOAD_URL = '/static/uploads/'
 #APP_THEME = "readable.css"
 #APP_THEME = "simplex.css"
 #APP_THEME = "slate.css"   
-APP_THEME = "spacelab.css"
+#APP_THEME = "spacelab.css"
 #APP_THEME = "united.css"
 #APP_THEME = "yeti.css"
+#APP_THEME = "paper.css"
 
