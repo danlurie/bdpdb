@@ -1,7 +1,7 @@
 from flask import render_template
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 #from flask_appbuilder import ModelView, expose, BaseView, has_access, SimpleFormView
-from flask_appbuilder import ModelView, BaseView, has_access, expose
+from flask_appbuilder import ModelView, BaseView, expose
 from app import appbuilder, db
 from flask_appbuilder.widgets import ListLinkWidget
 #from wtforms import StringField
@@ -11,19 +11,30 @@ from flask_appbuilder.widgets import ListLinkWidget
 from .models import (Patient, PatientNote, Etiology, DataSource, BrainArea,
         Laterality, Scan, ScanModality, Sex)
 
-
-# Group overlap view
-class Home(BaseView):
+class OverlapPage(BaseView):
     
     default_view = 'view_overlap'
 
     @expose('/view_overlap/')
-    @has_access
     def view_overlap(self):
         self.update_redirect()
         return self.render_template('view_overlap.html')
      
-appbuilder.add_view(Home, 'View Overlap', category='Home')
+appbuilder.add_view(OverlapPage, 'Overlap Heatmap',
+        icon='fa-database', category='Browse')
+
+class PatientPage(BaseView):
+    
+    default_view = 'view_patient'
+
+    @expose('/view_patient/')
+    def view_patient(self):
+        self.update_redirect()
+        return self.render_template('view_patient.html')
+     
+appbuilder.add_view(PatientPage, 'View Patient',
+        icon='fa-database', category='Browse')
+
 
 class ScanView(ModelView):
     datamodel = SQLAInterface(Scan)
@@ -57,6 +68,11 @@ class PatientView(ModelView):
     edit_columns = ['dob','sex','damaged_areas','laterality',
             'insult_date','etiology','data_source']
     list_columns = ['patient_label','dob','sex','damaged_areas','laterality']
+
+    show_fieldsets = [
+            ('Patient Information',{
+                'fields':['patient_label','sex','dob','damaged_areas',
+                    'laterality','insult_date','etiology','data_source']})]
   
     
     related_views = [ScanView, PatientNoteView] 
