@@ -56,8 +56,8 @@ class DataSource(Model):
 class PatientNote(AuditMixin, Model):
     id = Column(Integer, primary_key=True)
     patient_id = Column(Integer, ForeignKey('patient.id'), nullable=False)
+    note_title = Column(String(25), nullable=False)
     note_text = Column(String(1000), nullable=False)
-
 
 class Patient(AuditMixin, Model):
     id = Column(Integer, primary_key=True)
@@ -84,11 +84,11 @@ class Patient(AuditMixin, Model):
     data_source_id = Column(Integer, ForeignKey('data_source.id'))
     data_source = relationship("DataSource")
     
-    #patient_notes = Column(String(500))
+    patient_notes = relationship('PatientNote', backref='patient')
     #patient_scans = relationship("Scan")
 
     def __repr__(self):
-        return self.patient_number
+        return self.patient_label
 
 """
 

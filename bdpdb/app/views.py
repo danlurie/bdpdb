@@ -1,12 +1,15 @@
-from flask import render_template, flash
+from flask import render_template
 from flask_appbuilder.models.sqla.interface import SQLAInterface
-from flask_appbuilder import ModelView, expose, BaseView, has_access, SimpleFormView
+#from flask_appbuilder import ModelView, expose, BaseView, has_access, SimpleFormView
+from flask_appbuilder import ModelView
 from app import appbuilder, db
+from flask_appbuilder.widgets import (ListItem, ListThumbnail, ListBlock, 
+        ListLinkWidget, ShowBlockWidget)
 #from wtforms import StringField
 #from wtforms.validators import DataRequired
 #from flask_appbuilder.fieldwidgets import BS3TextFieldWidget
 #from flask_appbuilder.forms import DynamicForm
-from .models import (Patient, Etiology, DataSource, BrainArea, Laterality,
+from .models import (Patient, PatientNote, Etiology, DataSource, BrainArea, Laterality,
         Sex)
 
 """
@@ -25,7 +28,8 @@ appbuilder.add_view(Home, 'View Overlap', category='Home')
 
 # PatientScanView
 class PatientScanView(ModelView):
-    datamodel = SQLAInterface(Scan)
+    datamodel = SQLAInterface(Scan) 
+
     add_columns = ['patient_number','modality', 'scan_date', 'filename']
     edit_columns = ['modality', 'scan_date', 'filename']
     show_columns = ['modality', 'scan_date', 'filename']
@@ -34,15 +38,31 @@ class PatientScanView(ModelView):
 appbuilder.add_view_no_menu(PatientScanView, "PatientScanView")
 """
 
+class PatientNoteView(ModelView):
+    datamodel = SQLAInterface(PatientNote)
+    list_widget = ListLinkWidget
+    show_widget = ShowBlockWidget
+
+    add_columns = ['note_title', 'note_text']
+    edit_columns = ['note_title', 'note_text']
+    list_columns = ['note_title', 'created_by', 'created_on']
+    show_columns = ['created_by', 'created_on', 'note_title', 'note_text']
+
+appbuilder.add_view_no_menu(PatientNoteView, 'PatientNoteView')
+
 class PatientView(ModelView):
     datamodel = SQLAInterface(Patient)
+    
 
     add_columns = ['patient_label','dob','sex','damaged_areas','laterality',
             'insult_date','etiology','data_source']
     edit_columns = ['dob','sex','damaged_areas','laterality',
             'insult_date','etiology','data_source']
     list_columns = ['patient_label','dob','sex','damaged_areas','laterality']
-        
+  
+    
+    related_views = [PatientNoteView] 
+    show_template = 'appbuilder/general/model/show_cascade.html' 
    # related_views = [PatientScanView]
    # show_template = 'appbuilder/general/model/show_cascade.html'
 
@@ -89,6 +109,7 @@ appbuilder.add_view(BrainAreaView, 'Manage Brain Areas',
 
 appbuilder.add_view(DataSourceView, 'Manage Data Sources',
         icon='fa-institution', category='Manage')
+
 
 
 # Auto-fill values for Sex and Hemisphere
