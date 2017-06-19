@@ -10,11 +10,10 @@
 {% set mask_path = 'http://localhost:9090/sub-{0}/anat/sub-{0}_t1w_variant-reorient_label-lesion_roi.nii.gz'.format(param1) %}
 {% set mask_fname = 'sub-{0}_t1w_variant-reorient_label-lesion_roi.nii.gz'.format(param1) %} 
 
-
 {% block head_js %}
     {{ super() }}
     <script src="{{url_for('static', filename='papaya/papaya.js')}}"></script>
-    <script type="text/javascript">
+    <script type="text/javascript">     
         
         var params = [];
         params['worldSpace'] = false;
@@ -22,8 +21,7 @@
         params['smoothDisplay'] = false;
         params['showControlBar'] = true;
         params['expandable'] = true; 
-        params["images"] = ['{{t1_path}}','{{mask_path}}'];
-        
+        params["images"] = ['{{t1_path}}','{{mask_path}}']; 
         params['{{t1_fname}}']  = {lut: "Greyscale",
                                    interpolation: false,
                                    minPercent: 0.0,
@@ -31,23 +29,8 @@
         params['{{mask_fname}}'] = {lut: "Overlay (Negatives)",
                                     interpolation: false,
                                     alpha: 0.5};
-        params['worldSpace'] = false;/*
-        params["images"] = [
-        '{{url_for('static', filename='scan_data/MNI152_T1_2mm_brain.nii.gz')}}',
-        '{{url_for('static', filename='scan_data/lesion_mask_mni_sum.nii.gz')}}'];
-        params['MNI152_T1_2mm_brain.nii.gz']  = {minPercent: 0.0,
-                                          maxPercent: 1.0,
-                                          lut: "Greyscale",
-                                          interpolation: false};
-        params['lesion_mask_mni_sum.nii.gz'] = {minPercent: 0.0,
-                                                 maxPercent: 1.0,
-                                                 lut: "Overlay (Positives)",
-                                                 interpolation: false,
-                                                 alpha: 0.5}; */
-
     </script>
 {% endblock %}
-
 
 {% block content %}
     <h1>{{param1}}</h1>
