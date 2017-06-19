@@ -1,0 +1,41 @@
+{% extends "appbuilder/base.html" %}
+
+{% block head_css %}
+    {{ super() }}
+    <link href="{{url_for('static', filename='papaya/papaya.css')}}" rel="stylesheet"/>
+{% endblock %}
+
+{% block head_js %}
+    {{ super() }}
+    <script src="{{url_for('static', filename='papaya/papaya.js')}}"></script>
+    <script type="text/javascript">
+        
+        var params = [];
+        params['worldSpace'] = true;
+        params['radiological'] = true;
+        params['smoothDisplay'] = false;
+        params['showControlBar'] = true;
+        params['expandable'] = true; 
+        #params["images"] = [
+        #'{{url_for('static', filename='scan_data/MNI152_T1_2mm_brain.nii.gz')}}',
+        '{{url_for('static', filename='scan_data/lesion_mask_mni_sum.nii.gz')}}'];
+        params['MNI152_T1_2mm_brain.nii.gz']  = {minPercent: 0.0,
+                                          maxPercent: 1.0,
+                                          lut: "Greyscale",
+                                          interpolation: false};
+        params['lesion_mask_mni_sum.nii.gz'] = {minPercent: 0.0,
+                                                 maxPercent: 1.0,
+                                                 lut: "Overlay (Positives)",
+                                                 interpolation: false,
+                                                 alpha: 0.5};
+
+    </script>
+{% endblock %}
+
+
+{% block content %}
+    <h1>{{param1}}</h1>
+    <div style="width:900px; height:600px; margin: 0 auto;">
+        <div class="papaya" data-params="params"></div>
+    </div>
+{% endblock %}

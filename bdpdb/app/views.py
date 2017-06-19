@@ -3,13 +3,17 @@ from flask_appbuilder.models.sqla.interface import SQLAInterface
 #from flask_appbuilder import ModelView, expose, BaseView, has_access, SimpleFormView
 from flask_appbuilder import ModelView, BaseView, expose
 from app import appbuilder, db
-from flask_appbuilder.widgets import ListLinkWidget
+from flask_appbuilder.widgets import ListLinkWidget, ShowWidget, ShowBlockWidget, ShowVerticalWidget
 #from wtforms import StringField
 #from wtforms.validators import DataRequired
 #from flask_appbuilder.fieldwidgets import BS3TextFieldWidget
 #from flask_appbuilder.forms import DynamicForm
 from .models import (Patient, PatientNote, Etiology, DataSource, BrainArea,
         Laterality, Scan, ScanModality, Sex)
+
+class CustomShowWidget(ShowWidget):
+    template = 'show_widget.html'
+
 
 class OverlapPage(BaseView):
     
@@ -36,8 +40,21 @@ appbuilder.add_view(PatientPage, 'View Patient',
         icon='fa-database', category='Browse')
 
 
-class MyView(BaseView):
+class SearchResults(ModelView):
+    datamodel = SQLAInterface(Patient)
+    list_template = 'results.html'
 
+appbuilder.add_view(SearchResults, "Search", category='My View')
+
+class ViewSingle(ModelView):
+    datamodel = SQLAInterface(Patient)
+    show_template = 'single.html'
+
+appbuilder.add_view(ViewSingle, "View Single", category='My View')
+
+
+class MyView(BaseView):
+    
     default_view = 'method1'
 
     @expose('/method1/')
@@ -54,7 +71,6 @@ class MyView(BaseView):
         # and render template with param
         param1 = 'Goodbye %s' % (param1)
         return param1
-
 
     @expose('/method3/<string:param1>')
     #@has_access
@@ -97,6 +113,7 @@ appbuilder.add_view_no_menu(PatientNoteView, 'PatientNoteView')
 class PatientView(ModelView):
     datamodel = SQLAInterface(Patient)
     list_widget = ListLinkWidget
+    show_widget = CustomShowWidget
     
     add_columns = ['patient_label','dob','sex','damaged_areas','laterality',
             'insult_date','etiology','data_source']
@@ -111,9 +128,7 @@ class PatientView(ModelView):
   
     
     related_views = [ScanView, PatientNoteView] 
-    show_template = 'appbuilder/general/model/show_cascade.html' 
-    #related_views = [ScanView]
-    #show_template = 'appbuilder/general/model/show_cascade.html'
+    show_template = 'patient_cascade.html'  
 
 
 class EtiologyView(ModelView):
