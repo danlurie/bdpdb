@@ -1,0 +1,15 @@
+
+# Get current crosshair coordinates (img space)
+var x = papayaContainers[0].viewer.currentCoord.x;
+var y = papayaContainers[0].viewer.currentCoord.y;
+var z = papayaContainers[0].viewer.currentCoord.z;
+
+# Convert image space coordinates to world space
+var world = new papaya.core.Coordinate();
+world_coord = papayaContainers[0].viewer.getWorldCoordinateAtIndex(x, y, z, world);
+
+# toggle worldspace
+papayaContainers[0].viewer.toggleWorldSpace()
+papayaContainers[0].viewer.drawViewer(!0)
+
+

@@ -96,3 +96,6 @@ IMG_UPLOAD_URL = '/static/uploads/'
 #APP_THEME = "yeti.css"
 #APP_THEME = "paper.css"
 
+# send_from_directory folder
+#BIDS_FOLDER = '/home/de
+
