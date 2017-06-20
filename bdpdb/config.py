@@ -70,6 +70,11 @@ LANGUAGES = {
 # The file upload folder, when using models with files
 UPLOAD_FOLDER = basedir + '/app/static/uploads/'
 
+# Custom
+FILE_ALLOWED_EXTENSIONS = ('nii.gz')
+DERIVATIVES_SERVER_BASEDIR = '/home/despoB/dlurie/Projects/despolab_lesion/data/patients/'
+RAW_SERVER_BASEDIR = '/home/despoB/lesion/data/original/bids/'
+
 # The image upload folder, when using models with images
 IMG_UPLOAD_FOLDER = basedir + '/app/static/uploads/'
 

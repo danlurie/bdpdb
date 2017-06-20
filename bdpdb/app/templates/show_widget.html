@@ -2,6 +2,36 @@
 {% include 'appbuilder/general/confirm.html' %}
 {% include 'appbuilder/general/alert.html' %}
 
+{% set mask_path_prefix = config.DERIVATIVES_SERVER_BASEDIR %}
+{% set pid = value_columns[include_columns.index('patient_label')] %}
+{% set t1_path = 'http://localhost:7070/sub-{0}/anat/sub-{0}_T1w.nii.gz'.format(pid) %}
+{% set t1_fname = 'sub-{0}_T1w.nii.gz'.format(param1) %}
+{# {% set mask_path = 'http://localhost:9090/sub-{0}/anat/sub-{0}_t1w_variant-reorient_label-lesion_roi.nii.gz'.format(param1) %} #}
+{#  {% set mask_fname = 'sub-{0}_t1w_variant-reorient_label-lesion_roi.nii.gz'.format(param1) %} #}
+{% set full_mask_path = value_columns[include_columns.index('mni_mask_path')] %}
+{% set rel_mask_path = [full_mask_path, mask_path_prefix]|rel_path %}
+{% set mask_path = 'http://localhost:9090/{}'.format(rel_mask_path) %}
+{{ mask_path }}
+
+<script type="text/javascript">     
+        
+        var params = [];
+        params['worldSpace'] = false;
+        params['radiological'] = false;
+        params['smoothDisplay'] = false;
+        params['showControlBar'] = true;
+        params['expandable'] = true; 
+        params["images"] = ['{{t1_path}}','{{mask_path}}']; 
+        params['{{t1_fname}}']  = {lut: "Greyscale",
+                                   interpolation: false,
+                                   minPercent: 0.0,
+                                   maxPercent: 0.7};
+        params['{{mask_fname}}'] = {lut: "Overlay (Negatives)",
+                                    interpolation: false,
+                                    alpha: 0.5};
+</script>
+
+
 {% if fieldsets %}
 
     {% for fieldset_item in fieldsets %}
@@ -10,12 +40,21 @@
         {% else %}
             {% set expanded = fieldset_item[1].get('expanded') %}
         {% endif %}
+
+        {% call lib.accordion_tag(view.__class__.__name__,"Patient Mask", False) %}
+        <div style="width: 90%;  margin: 0 auto;">
+            <div class="papaya" data-params="params"></div>
+        </div>
+{% endcall %}
+        
+ 
         {% call lib.accordion_tag(loop.index,fieldset_item[0], expanded) %}
-        <div class="table-responsive", style="width: 40%;">
+        {{value_columns[include_columns.index('mni_mask_path')]}}
+        <div class="table-responsive">
         <table class="table table-bordered">
         {% for item in fieldset_item[1].get('fields') %}
             <tr>
-            <th class="col-lg-4 col-md-2 col-sm-2">{{label_columns.get(item)}}</th>
+            <th class="col-lg-2 col-md-2 col-sm-2">{{label_columns.get(item)}}</th>
             <td><span style="white-space: pre-line">{{value_columns[include_columns.index(item)]}}</span></td>
             </tr>
         {% endfor %}

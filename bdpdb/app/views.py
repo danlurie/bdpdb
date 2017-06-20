@@ -3,7 +3,7 @@ from flask_appbuilder.models.sqla.interface import SQLAInterface
 #from flask_appbuilder import ModelView, expose, BaseView, has_access, SimpleFormView
 from flask_appbuilder import ModelView, BaseView, expose
 from app import appbuilder, db
-from flask_appbuilder.widgets import ListLinkWidget, ShowWidget, ShowBlockWidget, ShowVerticalWidget
+from flask_appbuilder.widgets import ListLinkWidget, ShowWidget
 #from wtforms import StringField
 #from wtforms.validators import DataRequired
 #from flask_appbuilder.fieldwidgets import BS3TextFieldWidget
@@ -14,6 +14,8 @@ from .models import (Patient, PatientNote, Etiology, DataSource, BrainArea,
 class CustomShowWidget(ShowWidget):
     template = 'show_widget.html'
 
+class PapayaWidget(ShowWidget):
+    template = 'papaya_widget.html'
 
 class OverlapPage(BaseView):
     
@@ -110,26 +112,28 @@ class PatientNoteView(ModelView):
 
 appbuilder.add_view_no_menu(PatientNoteView, 'PatientNoteView')
 
+
 class PatientView(ModelView):
     datamodel = SQLAInterface(Patient)
     list_widget = ListLinkWidget
     show_widget = CustomShowWidget
     
     add_columns = ['patient_label','dob','sex','damaged_areas','laterality',
-            'insult_date','etiology','data_source']
+            'insult_date','etiology','data_source','mni_mask_path']
     edit_columns = ['dob','sex','damaged_areas','laterality',
-            'insult_date','etiology','data_source']
+            'insult_date','etiology','data_source', 'mni_mask_path']
     list_columns = ['patient_label','dob','sex','damaged_areas','laterality']
 
     show_fieldsets = [
             ('Patient Information',{
                 'fields':['patient_label','sex','dob','damaged_areas',
-                    'laterality','insult_date','etiology','data_source']})]
-  
-    
+                    'laterality','insult_date','etiology','data_source',
+                    'mni_mask_path']})]
+   
     related_views = [ScanView, PatientNoteView] 
     show_template = 'patient_cascade.html'  
-
+    
+    extra_args = {'foo': 'bar'}
 
 class EtiologyView(ModelView):
     datamodel = SQLAInterface(Etiology)

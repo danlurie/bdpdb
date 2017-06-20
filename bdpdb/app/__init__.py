@@ -1,4 +1,4 @@
-#import os
+import os
 import logging
 from flask import Flask
 from flask_appbuilder import SQLA
@@ -20,6 +20,7 @@ app.config['TEMPLATES_AUTO_RELOAD'] = True
 db = SQLA(app)
 appbuilder = AppBuilder(app, db.session, security_manager_class=MySecurityManager)
 
+app.jinja_env.filters['rel_path'] = lambda paths: os.path.relpath(*paths)
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):

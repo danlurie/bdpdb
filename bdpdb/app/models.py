@@ -60,6 +60,13 @@ class PatientNote(AuditMixin, Model):
     note_title = Column(String(25), nullable=False)
     note_text = Column(String(1000), nullable=False)
 
+"""
+class PatientMask(AuditMixin, Model):
+    id = Column(Integer, primary_key=True)
+    patient_id = Column(Integer, ForeignKey('patient.id'), nullable=False)
+    patient = relationship('Patient', back_populates='mask')
+    mask_path = Column(String(200), nullable=False)
+"""
 
 class Patient(AuditMixin, Model):
     id = Column(Integer, primary_key=True)
@@ -85,7 +92,10 @@ class Patient(AuditMixin, Model):
 
     data_source_id = Column(Integer, ForeignKey('data_source.id'))
     data_source = relationship("DataSource")
-    
+   
+    #mask = relationship('PatientMask', uselist=False, back_populates='patient')
+    mni_mask_path = Column(String(200), unique=True, nullable=False)
+
     patient_notes = relationship('PatientNote', backref='patient')
     patient_scans = relationship("Scan", backref='patient')
 

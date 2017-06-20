@@ -1,12 +1,22 @@
 {% extends "appbuilder/base.html" %}
 {% import 'appbuilder/general/lib.html' as lib %}
 
+{% block head_css %}
+    {{ super() }}
+    <link href="{{url_for('static', filename='papaya/papaya.css')}}" rel="stylesheet"/>
+{% endblock %}
+
+{% block head_js %}
+    {{ super() }}
+    <script src="{{url_for('static', filename='papaya/papaya.js')}}"></script>
+{% endblock %}
+
 {% block content %}
+
 {{ lib.panel_begin(title) }}
 
 {% block show_form %}
-    Test 123
-    {{ widgets.get('show')()|safe }}
+        {{ widgets.get('show')()|safe }}
 {% endblock show_form %}
 
 {% block related_views %}
