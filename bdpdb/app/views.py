@@ -1,18 +1,17 @@
-from flask import render_template
+from flask import render_template, flash, redirect
 from flask_appbuilder.models.sqla.interface import SQLAInterface
+from flask_appbuilder.models.sqla.filters import get_field_setup_query
+from flask_appbuilder.models.filters import BaseFilter
 #from flask_appbuilder import ModelView, expose, BaseView, has_access, SimpleFormView
-from flask_appbuilder import ModelView, BaseView, expose
+from flask_appbuilder import ModelView, BaseView, expose, SimpleFormView
 from app import appbuilder, db
 from flask_appbuilder.widgets import ListLinkWidget, ShowWidget
-#from wtforms import StringField
-#from wtforms.validators import DataRequired
-#from flask_appbuilder.fieldwidgets import BS3TextFieldWidget
-#from flask_appbuilder.forms import DynamicForm
+from wtforms import StringField
+from wtforms.validators import DataRequired
+from flask_appbuilder.fieldwidgets import BS3TextFieldWidget
+from flask_appbuilder.forms import DynamicForm
 from .models import (Patient, PatientNote, Etiology, DataSource, BrainArea,
         Laterality, Scan, ScanModality, Sex)
-
-class CustomShowWidget(ShowWidget):
-    template = 'show_widget.html'
 
 class PapayaWidget(ShowWidget):
     template = 'papaya_widget.html'
@@ -41,12 +40,6 @@ class PatientPage(BaseView):
 appbuilder.add_view(PatientPage, 'View Patient',
         icon='fa-database', category='Browse')
 
-
-class SearchResults(ModelView):
-    datamodel = SQLAInterface(Patient)
-    list_template = 'results.html'
-
-appbuilder.add_view(SearchResults, "Search", category='My View')
 
 class ViewSingle(ModelView):
     datamodel = SQLAInterface(Patient)
@@ -113,6 +106,9 @@ class PatientNoteView(ModelView):
 appbuilder.add_view_no_menu(PatientNoteView, 'PatientNoteView')
 
 
+class CustomShowWidget(ShowWidget):
+    template = 'show_widget.html'
+
 class PatientView(ModelView):
     datamodel = SQLAInterface(Patient)
     list_widget = ListLinkWidget
@@ -135,6 +131,68 @@ class PatientView(ModelView):
     
     extra_args = {'foo': 'bar'}
 
+appbuilder.add_view(PatientView, "List Patients",
+        icon='fa-users',category='Browse')
+
+
+
+"""
+Coordinate Search
+"""
+
+class FilterIsIn(BaseFilter):
+    name = "Filter items that appear in a list."
+
+    def apply(self, query, item_list):
+        query, field = get_field_setup_query(query, self.model, self.column_name)
+        return query.filter(field.in_(item_list))
+          
+
+class CoordinateSearchResults(PatientView):
+    datamodel = SQLAInterface(Patient)
+    base_filters = [['patient_label', FilterIsIn, ['101', '103']]]
+    #list_template = 'results.html'
+
+appbuilder.add_view(CoordinateSearchResults, "Coordinate Search Results")
+
+class CoordSearch(DynamicForm):
+    field_x = StringField(('X'),
+              validators=[DataRequired()],
+              widget=BS3TextFieldWidget())
+    field_y = StringField(('Y'),
+              validators=[DataRequired()],
+              widget=BS3TextFieldWidget())
+    field_z = StringField(('Z'),
+              validators=[DataRequired()],
+              widget=BS3TextFieldWidget())
+
+class CoordSearchView(SimpleFormView):
+    form = CoordSearch
+    form_title = "MNI Coordinate Search"
+    
+    def form_get(self, form):
+        # pre-process form
+        pass
+        
+    def form_post(self, form):
+        # post-process form
+        redirect_url = 'http://www.google.com'
+        return redirect(redirect_url)
+
+        #patients = coordinate_searc(
+        flash("hello", 'info')
+
+    
+appbuilder.add_view(CoordSearchView, "MNI Coordinate Search", icon='fa-search', label='Search',
+        category='Foo', category_icon='fa_cogs')
+
+
+
+
+"""
+Metadata Model Views
+"""
+
 class EtiologyView(ModelView):
     datamodel = SQLAInterface(Etiology)
     related_views = [PatientView]
@@ -143,6 +201,8 @@ class EtiologyView(ModelView):
     show_columns = ['name']
     list_columns = ['name']
 
+appbuilder.add_view(EtiologyView, 'Manage Etiologies',
+        icon='fa-ambulance', category='Manage')
 
 class BrainAreaView(ModelView):
     datamodel = SQLAInterface(BrainArea)
@@ -152,6 +212,8 @@ class BrainAreaView(ModelView):
     show_columns = ['name']
     list_columns = ['name']
 
+appbuilder.add_view(BrainAreaView, 'Manage Brain Areas',
+        icon='fa-globe', category='Manage')
 
 class DataSourceView(ModelView):
     datamodel = SQLAInterface(DataSource)
@@ -161,6 +223,9 @@ class DataSourceView(ModelView):
     show_columns = ['name']
     list_columns = ['name']
 
+appbuilder.add_view(DataSourceView, 'Manage Data Sources',
+        icon='fa-institution', category='Manage')
+
 class ScanModalityView(ModelView):
     datamodel = SQLAInterface(ScanModality)
     related_views = [ScanView]
@@ -169,28 +234,13 @@ class ScanModalityView(ModelView):
     show_columns = ['name']
     list_columns = ['name']
 
-
-"""
-Register views
-"""
-
-appbuilder.add_view(PatientView, "Patients",
-        icon='fa-users',category='Browse')
-
-appbuilder.add_view(EtiologyView, 'Manage Etiologies',
-        icon='fa-ambulance', category='Manage')
-
-appbuilder.add_view(BrainAreaView, 'Manage Brain Areas',
-        icon='fa-globe', category='Manage')
-
-appbuilder.add_view(DataSourceView, 'Manage Data Sources',
-        icon='fa-institution', category='Manage')
-
 appbuilder.add_view(ScanModalityView, 'Manage Scan Types',
         icon='fa-file-image-o', category='Manage')
 
 
-
+"""
+Register views
+"""
 
 # Auto-fill values for Sex and Hemisphere
 def fill_sex():
@@ -214,83 +264,8 @@ def fill_hemi():
 fill_sex()
 fill_hemi()
 
-"""
-# ScanModality view
-class ScanModalityView(ModelView):
-    datamodel = SQLAInterface(ScanModality)
-    related_views = [PatientView]
-    add_columns = ['name']
-    edit_columns = ['name']
-    show_columns = ['name']
-    list_columns = ['name']
 
 
-db.create_all()
-appbuilder.add_view(ScanModalityView, 'Manage Scan Types', icon='fa-file-image-o', category='Manage')
-
-# Auto-fill test values.
-def fill_source():
-    sources = ['UC Davis', 'UC Berkeley', 'Martinez VA']
-    try:
-        for i in sources:
-            db.session.add(DataSource(name=i))
-        db.session.commit()
-        print('#####----####--SOURCE----####---####----')
-    except:
-        db.session.rollback()
-
-def fill_cause():
-    causes = ['TBI', 'Ischemic Stroke', 'Hemorrhagic Stroke']
-    try:
-        for i in causes:
-            db.session.add(Cause(name=i))
-        db.session.commit() 
-    except:
-        db.session.rollback()
-
-def fill_area():
-    areas = ['Thalamus', 'Striatum', 'OFC']
-    try:
-        for i in areas:
-            db.session.add(BrainArea(name=i))
-        db.session.commit() 
-    except:
-        db.session.rollback()
-
-fill_source()
-fill_cause()
-fill_area()
-
-
-class CoordSearch(DynamicForm):
-    field_x = StringField(('X'),
-              validators=[DataRequired()],
-              widget=BS3TextFieldWidget())
-    field_y = StringField(('Y'),
-              validators=[DataRequired()],
-              widget=BS3TextFieldWidget())
-    field_z = StringField(('Z'),
-              validators=[DataRequired()],
-              widget=BS3TextFieldWidget())
-
-class CoordSearchView(SimpleFormView):
-    form = CoordSearch
-    form_title = "MNI Coordinate Search"
-    
-    def form_get(self, form):
-        # pre-process form
-        pass
-        
-    def form_post(self, form):
-        # post-process form
-        #patients = coordinate_searc(
-        flash("hello")
-        pass
-
-appbuilder.add_view(CoordSearchView, "MNI Coordinate Search", icon='fa-search', label='Search',
-        category='Search', category_icon='fa_cogs')
-
-"""
     
 # Application wide 404 error handler
 

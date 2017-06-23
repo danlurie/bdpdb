@@ -1,11 +1,13 @@
+import os
 from flask_appbuilder import Model
 from flask_appbuilder.models.mixins import AuditMixin
+from flask_appbuilder.models.generic import GenericModel, GenericSession, GenericColumn
 from sqlalchemy import Column, Integer, String, Date, ForeignKey, Table
 from sqlalchemy.orm import relationship
 #from wtforms import Form, IntegerField, validators
 
 """
-Patient information tables
+Metadata Models
 """
 class Sex(Model):
     id = Column(Integer, primary_key=True)
@@ -14,7 +16,6 @@ class Sex(Model):
     def __repr__(self):
         return self.name
 
-
 class BrainArea(Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(75), unique=True, nullable=False)
@@ -22,12 +23,10 @@ class BrainArea(Model):
     def __repr__(self):
         return self.name
 
-
 assoc_patient_area = Table('assoc_patient_area', Model.metadata,
         Column('patient_id', Integer, ForeignKey('patient.id')),
         Column('area_id', Integer, ForeignKey('brain_area.id'))
         )
-
 
 class Laterality(Model):
     id = Column(Integer, primary_key=True)
@@ -36,14 +35,12 @@ class Laterality(Model):
     def __repr__(self):
         return self.name
 
-
 class Etiology(Model):
     id = Column(Integer, primary_key=True)
     name = Column(String(50), unique=True, nullable=False)
 
     def __repr__(self):
         return self.name
-
 
 class DataSource(Model):
     id = Column(Integer, primary_key=True)
@@ -52,6 +49,9 @@ class DataSource(Model):
     def __repr__(self):
         return self.name
 
+"""
+Patient Models
+"""
 
 class PatientNote(AuditMixin, Model):
     id = Column(Integer, primary_key=True)
@@ -128,10 +128,54 @@ class Scan(AuditMixin, Model):
 
     def __repr__(self):
         return self.filename
+
+class PSModel(GenericModel):
+    UID = GenericColumn(str)
+    PID = GenericColumn(int, primary_key=True)
+    PPID = GenericColumn(int)
+    C = GenericColumn(int)
+    STIME = GenericColumn(str)
+    TTY = GenericColumn(str)
+    TIME = GenericColumn(str)
+    CMD = GenericColumn(str)
+
+class PSSession(GenericSession):
+    regexp = "(\w+) +(\w+) +(\w+) +(\w+) +(\w+:\w+|\w+) (\?|tty\w+) +(\w+:\w+:\w+) +(.+)\n"
+
+    def _add_object(self, line):
+        import re
+
+        group = re.findall(self.regexp, line)
+        if group:
+            model = PSModel()
+            model.UID = group[0][0]
+            model.PID = int(group[0][1])
+            model.PPID = int(group[0][2])
+            model.C = int(group[0][3])
+            model.STIME = group[0][4]
+            model.TTY = group[0][5]
+            model.TIME = group[0][6]
+            model.CMD = group[0][7]
+            self.add(model)
+
+    def get(self, pk):
+        self.delete_all(PSModel())
+        out = os.popen('ps -p {0} -f'.format(pk))
+        for line in out.readlines():
+            self._add_object(line)
+        return super(PSSession, self).get(pk)
+
+
+    def all(self):
+        self.delete_all(PSModel())
+        out = os.popen('ps -ef')
+        for line in out.readlines():
+            self._add_object(line)
+        return super(PSSession, self).all()
+
+
+
 """
-# The Patient entity
-
-
 # Coordinate search form
 class CoordSearchForm(Form):
     x = IntegerField(
@@ -143,40 +187,6 @@ class CoordSearchForm(Form):
     z = IntegerField(
             label='z',
             validators=[validators.InputRequired()])
-
-
-
-class Sequence(Model):
-    id = Column(Integer, primary_key=True)
-    sequence_name = Column(String(50), nullable=False)
-    repetition_time = Column(Integer, nullable=False)
-    echo_time = Column(Integer, nullable=False)
-    flip_angle = Column(Integer, nullable=False)
-    pixel_spacing = Column(String(25), nullable=False)
-    num_slices =  Column(Integer, nullable=False)
-    slice_thickness = Column(Float, nullable=False)
-    slice_spacing = Column(Float, nullable=False)
-    acquisition_order = Column(String(25))
-    volumes = Column(Integer, nullable=False)
-    scanner = Column(String(25), nullable=False)
-
-    def __repr__(self):
-        return self.sequence_name
-
-class Scan(Model):
-    id = Column(Integer, primary_key=True)
-    scan_type = Column(String(25), nullable=False)
-    scan_date = Column(Date, nullable=False)
-    scan_site = Column(String(25), nullable=False)
-    file_path = Column(String(250), nullable=False)
-    patient_id = Column(Integer, ForeignKey('patient.id'), nullable=False)
-    patient = relationship('Patient')
-    sequence_id = Column(Integer, ForeignKey('sequence.id'), nullable=False)
-    sequence = relationship('Sequence')
-
-    def __repr__(self):
-        return self.scan_type
-
 """
 
 

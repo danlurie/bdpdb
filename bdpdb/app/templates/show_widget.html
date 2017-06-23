@@ -4,14 +4,20 @@
 
 {% set mask_path_prefix = config.DERIVATIVES_SERVER_BASEDIR %}
 {% set pid = value_columns[include_columns.index('patient_label')] %}
+{# Native Space #}
+{#
 {% set t1_path = 'http://localhost:7070/sub-{0}/anat/sub-{0}_T1w.nii.gz'.format(pid) %}
-{% set t1_fname = 'sub-{0}_T1w.nii.gz'.format(param1) %}
-{# {% set mask_path = 'http://localhost:9090/sub-{0}/anat/sub-{0}_t1w_variant-reorient_label-lesion_roi.nii.gz'.format(param1) %} #}
-{#  {% set mask_fname = 'sub-{0}_t1w_variant-reorient_label-lesion_roi.nii.gz'.format(param1) %} #}
+{% set t1_fname = 'sub-{0}_T1w.nii.gz'.format(pid) %} }
+{% set mask_path = 'http://localhost:9090/sub-{0}/anat/sub-{0}_t1w_variant-reorient_label-lesion_roi.nii.gz'.format(pid) %}
+{% set mask_fname = 'sub-{0}_t1w_variant-reorient_label-lesion_roi.nii.gz'.format(pid) %}
+#}
+{# MNI Space #}
+{% set t1_path = url_for('static', filename='img_data/mni/mni_icbm152_t1_tal_nlin_asym_09c_brain.nii') %}
+{% set t1_fname = t1_path|basename %}
 {% set full_mask_path = value_columns[include_columns.index('mni_mask_path')] %}
 {% set rel_mask_path = [full_mask_path, mask_path_prefix]|rel_path %}
 {% set mask_path = 'http://localhost:9090/{}'.format(rel_mask_path) %}
-{{ mask_path }}
+{% set mask_fname = mask_path|basename %}
 
 <script type="text/javascript">     
         
@@ -25,7 +31,7 @@
         params['{{t1_fname}}']  = {lut: "Greyscale",
                                    interpolation: false,
                                    minPercent: 0.0,
-                                   maxPercent: 0.7};
+                                   maxPercent: 1.0};
         params['{{mask_fname}}'] = {lut: "Overlay (Negatives)",
                                     interpolation: false,
                                     alpha: 0.5};
@@ -49,7 +55,6 @@
         
  
         {% call lib.accordion_tag(loop.index,fieldset_item[0], expanded) %}
-        {{value_columns[include_columns.index('mni_mask_path')]}}
         <div class="table-responsive">
         <table class="table table-bordered">
         {% for item in fieldset_item[1].get('fields') %}
