@@ -1,4 +1,4 @@
-# Brain Damage Patient Database (BDPDB)
+# Brain Damage Patient Data Browser (BDPDB)
 BDPDB is a browser-based application for managing, browsing, and searching demographic information and neuroimaging data from patients with brain injury. 
 
 ## Privacy Warning
