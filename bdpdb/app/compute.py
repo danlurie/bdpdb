@@ -1,7 +1,7 @@
 from os import path
 from nibabel import load, affines
-from pandas import DataFrame, HDFStore
-from numpy import ravel, ravel_multi_index, random, prod
+from pandas import HDFStore
+from numpy import ravel_multi_index, random, prod
 #import numpy as np
 #import pandas as pd
 #import nibabel as nib
@@ -23,28 +23,32 @@ def add_replace_patient_mask(patient_number, mask_path, store_path):
     # Check inputs
     assert isinstance(patient_number, str)
     assert path.exists(mask_path)
-    
+    assert path.exists(store_path)  
     # Load the mask image.
     mask_data = load(mask_path).get_data()
-    
-    # Open the HD5 store, add a column for the new patient, then close the store.
+    # Load the mask-data store.
     store = HDFStore(store_path)
+    # Get the full DataFrame.
     data_df = store.get('df')
+    # Add a new column for the new patient.
     data_df[patient_number] = mask_data.ravel()
+    # Put the updated DataFrame back in the data store.
     store.put('df', data_df, format='t')
-    print(store.df.columns)
+    # Force all our changes to be written to disk.
     store.flush()
+    # Unload the data store.
     store.close()
 
 def coordinate_search(mni_coordinates, img_shape, inverse_affine, store_path):
     """
-    
+    Return a list of patients whose masks have damage at the specified location.    
+
     Parameters
     ----------
     coordinates : tuple
         MNI coordinates (x,y,z)
     img_shape : tuple
-        Voxel dimensions of the 3D mask images to be searched.
+        Voxel dimensions of the 3D MNI-space mask images to be searched.
     inverse_affine : array-like
         Mapping from MNI space to voxel-space.
     store_path : str
@@ -53,23 +57,23 @@ def coordinate_search(mni_coordinates, img_shape, inverse_affine, store_path):
     Returns
     -------
     patients : array-like
-        A list of patients with damage at the search coordinate.
-        
-    Notes
-    -----
-    Currently only able to handle 2mm resolution MNI coordinates.
+        A list of patients with damage at the search coordinate.    
     """
-
+    # Transform coordinates from MNI-space to voxel-space.
     voxel_coordinates = affines.apply_affine(inverse_affine, list(mni_coordinates))
     voxel_coordinates = [int(i) for i in voxel_coordinates]
+    # Transform voxel coordinates to flat indices.
     voxel_index = ravel_multi_index(voxel_coordinates, img_shape)
-    
+    # Load the mask data store.
     restore = HDFStore(store_path)
+    # Get data for only the specified voxel.
     vox_row = restore.select('df', start=voxel_index, stop=voxel_index+1)
+    # Get the list of patients with damage at the specified voxel.
     res = vox_row.T.iloc[:,0] == 1
     patients = list(res[res == True].index)
+    # Close the mask data store.
     restore.close()
-    
+
     return patients
 """
 def generate_overlap_iamge(overlap_image_path):

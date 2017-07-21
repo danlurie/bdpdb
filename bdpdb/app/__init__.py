@@ -21,6 +21,7 @@ db = SQLA(app)
 appbuilder = AppBuilder(app, db.session, security_manager_class=MySecurityManager)
 
 app.jinja_env.filters['rel_path'] = lambda paths: os.path.relpath(*paths)
+app.jinja_env.filters['basename'] = os.path.basename
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):

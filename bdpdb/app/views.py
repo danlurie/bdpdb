@@ -1,4 +1,5 @@
-from flask import render_template, flash, redirect
+from flask import render_template, flash, redirect, request
+import re
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.models.sqla.filters import get_field_setup_query
 from flask_appbuilder.models.filters import BaseFilter
@@ -131,6 +132,17 @@ class PatientView(ModelView):
     
     extra_args = {'foo': 'bar'}
 
+    @expose('/coord_search/', methods=['GET','POST'])
+    def coord_search(self):
+        patients = []
+        for arg in request.args:
+            re_match = re.findall('search_(.*',arg)
+            if re_match:
+                patients.append(str(request.args.get(arg)))
+        base_filters = [['patient_label', FilterIsIn, patients]]
+        return base_filters
+        
+
 appbuilder.add_view(PatientView, "List Patients",
         icon='fa-users',category='Browse')
 
@@ -150,7 +162,10 @@ class FilterIsIn(BaseFilter):
 
 class CoordinateSearchResults(PatientView):
     datamodel = SQLAInterface(Patient)
-    base_filters = [['patient_label', FilterIsIn, ['101', '103']]]
+
+     
+    
+    #base_filters = [['patient_label', FilterIsIn, ['101', '103']]]
     #list_template = 'results.html'
 
 appbuilder.add_view(CoordinateSearchResults, "Coordinate Search Results")

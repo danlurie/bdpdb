@@ -1,4 +1,5 @@
 {% extends 'appbuilder/baselayout.html' %}
+{% import 'appbuilder/general/lib.html' as lib %}
 
 <!-- Papaya imports. Files and build #'s copied from /Papaya/releases/current/standard/ -->
 {% block head_css %}
@@ -18,8 +19,8 @@
         params['showControlBar'] = true;
         params['expandable'] = true; 
         params["images"] = [
-        '{{url_for('static', filename='scan_data/MNI152_T1_2mm_brain.nii.gz')}}',
-        '{{url_for('static', filename='scan_data/lesion_mask_mni_sum.nii.gz')}}'];
+        '{{url_for('static', filename='img_data/MNI152_T1_2mm_brain.nii.gz')}}',
+        '{{url_for('static', filename='img_data/lesion_mask_mni_sum.nii.gz')}}'];
         params['MNI152_T1_2mm_brain.nii.gz']  = {minPercent: 0.0,
                                           maxPercent: 1.0,
                                           lut: "Greyscale",
@@ -34,8 +35,10 @@
 {% endblock %}
 
 {% block content %}
-    <div style="width:900px; height:600px; margin: 0 auto;">
+    {{ lib.panel_begin('Mask Overlap Heat Map') }}
+    <div style="width:100%; margin: 0 auto;">
         <div class="papaya" data-params="params"></div>
     </div>
+    {{ lib.panel_end() }}
 {% endblock %}
 

@@ -73,7 +73,7 @@ class Patient(AuditMixin, Model):
 
     patient_label = Column(String(25), unique=True, nullable=False)
 
-    dob = Column(Date, nullable=False) 
+    dob = Column(Date, nullable) 
 
     sex_id = Column(Integer, ForeignKey('sex.id'), nullable=False)
     sex = relationship('Sex')
