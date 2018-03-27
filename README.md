@@ -1,5 +1,5 @@
 # Brain Damage Patient Data Browser (BDPDB)
-BDPDB is a browser-based application for managing, browsing, and searching demographic information and neuroimaging data from patients with brain injury. 
+BDPDB is a browser-based application for managing, browsing, and searching demographic information and neuroimaging data from patients with brain injury. For an overview of BDPDB functionality, please see the [poster from OHBM 2017](https://figshare.com/articles/OHBM_2017_Poster_A_Browser-Based_Tool_for_Managing_Searching_and_Viewing_MRI_Data_from_Patients_with_Brain_Lesions/5145298).
 
 ## Privacy Warning
 BDPDB is designed for use in research settings, and the access controls built in to BDPDB should be considered only as additional safeguards to complement existing institutionally approved security infrastructure and data access protocols for protecting potentially sensitive patient information. There are a few specific points we would like users to be aware of:
